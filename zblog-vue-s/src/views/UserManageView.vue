@@ -14,6 +14,9 @@ const filterSuperuser = ref('')
 const filterActive = ref('')
 let searchTimer = null
 
+const detailVisible = ref(false)
+const detailRow = ref(null)
+
 const dialogVisible = ref(false)
 const dialogTitle = ref('新建用户')
 const form = ref({ username: '', email: '', password: '', is_superuser: false, is_staff: false, is_active: true })
@@ -157,9 +160,10 @@ onMounted(load)
       <el-table-column label="最后登录" min-width="120">
         <template #default="{ row }">{{ formatDate(row.last_login) }}</template>
       </el-table-column>
-      <el-table-column label="操作" width="160">
+      <el-table-column label="操作" width="240">
         <template #default="{ row }">
-          <el-button size="small" @click="openDialog(row)">编辑</el-button>
+          <el-button size="small" type="primary" @click="openDialog(row)">编辑</el-button>
+          <el-button size="small" class="detail-btn" @click="detailRow = row; detailVisible = true">详情</el-button>
           <el-button size="small" type="danger" @click="handleDelete(row)">删除</el-button>
         </template>
       </el-table-column>
@@ -172,6 +176,24 @@ onMounted(load)
         @current-change="onPageChange"
       />
     </div>
+
+    <el-dialog v-model="detailVisible" title="用户详情" width="500px" destroy-on-close>
+      <el-descriptions v-if="detailRow" :column="2" border>
+        <el-descriptions-item label="用户名">{{ detailRow.username }}</el-descriptions-item>
+        <el-descriptions-item label="邮箱">{{ detailRow.email || '-' }}</el-descriptions-item>
+        <el-descriptions-item label="超级管理">
+          <el-tag :type="detailRow.is_superuser ? 'danger' : 'info'" size="small">{{ detailRow.is_superuser ? '是' : '否' }}</el-tag>
+        </el-descriptions-item>
+        <el-descriptions-item label="员工">
+          <el-tag :type="detailRow.is_staff ? 'warning' : 'info'" size="small">{{ detailRow.is_staff ? '是' : '否' }}</el-tag>
+        </el-descriptions-item>
+        <el-descriptions-item label="激活">
+          <el-tag :type="detailRow.is_active ? 'success' : 'danger'" size="small">{{ detailRow.is_active ? '是' : '否' }}</el-tag>
+        </el-descriptions-item>
+        <el-descriptions-item label="注册时间">{{ formatDate(detailRow.date_joined) }}</el-descriptions-item>
+        <el-descriptions-item label="最后登录" :span="2">{{ formatDate(detailRow.last_login) }}</el-descriptions-item>
+      </el-descriptions>
+    </el-dialog>
 
     <el-dialog v-model="dialogVisible" :title="dialogTitle" width="500px" destroy-on-close>
       <el-form :model="form" label-width="90px">
@@ -207,4 +229,15 @@ onMounted(load)
 .page-header h2 { font-size: 1.3rem; white-space: nowrap; }
 .header-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .pagination-wrap { margin-top: 20px; display: flex; justify-content: center; }
+
+.detail-btn {
+  --el-button-bg-color: #e7a642;
+  --el-button-border-color: #e7a642;
+  --el-button-text-color: #fff;
+}
+.detail-btn:hover {
+  --el-button-bg-color: #d4952e;
+  --el-button-border-color: #d4952e;
+  --el-button-text-color: #fff;
+}
 </style>

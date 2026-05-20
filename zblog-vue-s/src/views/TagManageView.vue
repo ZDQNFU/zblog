@@ -9,6 +9,9 @@ const loading = ref(false)
 const search = ref('')
 let searchTimer = null
 
+const detailVisible = ref(false)
+const detailRow = ref(null)
+
 const dialogVisible = ref(false)
 const dialogTitle = ref('新建标签')
 const form = ref({ name: '', color: '#3b82f6' })
@@ -112,13 +115,28 @@ onMounted(load)
       <el-table-column label="最后修改" min-width="110">
         <template #default="{ row }">{{ formatDate(row.updated_at) }}</template>
       </el-table-column>
-      <el-table-column label="操作" min-width="140">
+      <el-table-column label="操作" min-width="220">
         <template #default="{ row }">
-          <el-button size="small" @click="openDialog(row)">编辑</el-button>
+          <el-button size="small" type="primary" @click="openDialog(row)">编辑</el-button>
+          <el-button size="small" class="detail-btn" @click="detailRow = row; detailVisible = true">详情</el-button>
           <el-button size="small" type="danger" @click="handleDelete(row)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
+
+    <el-dialog v-model="detailVisible" title="标签详情" width="460px" destroy-on-close>
+      <el-descriptions v-if="detailRow" :column="1" border>
+        <el-descriptions-item label="名称">{{ detailRow.name }}</el-descriptions-item>
+        <el-descriptions-item label="颜色">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span :style="{ display:'inline-block',width:20,height:20,borderRadius:4,background:detailRow.color }"></span>
+            {{ detailRow.color }}
+          </div>
+        </el-descriptions-item>
+        <el-descriptions-item label="创建时间">{{ formatDate(detailRow.created_at) }}</el-descriptions-item>
+        <el-descriptions-item label="最后修改">{{ formatDate(detailRow.updated_at) }}</el-descriptions-item>
+      </el-descriptions>
+    </el-dialog>
 
     <el-dialog v-model="dialogVisible" :title="dialogTitle" width="460px" destroy-on-close>
       <el-form :model="form" label-width="60px">
@@ -141,4 +159,15 @@ onMounted(load)
 .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 16px; }
 .page-header h2 { font-size: 1.3rem; white-space: nowrap; }
 .header-right { display: flex; align-items: center; gap: 12px; }
+
+.detail-btn {
+  --el-button-bg-color: #e7a642;
+  --el-button-border-color: #e7a642;
+  --el-button-text-color: #fff;
+}
+.detail-btn:hover {
+  --el-button-bg-color: #d4952e;
+  --el-button-border-color: #d4952e;
+  --el-button-text-color: #fff;
+}
 </style>

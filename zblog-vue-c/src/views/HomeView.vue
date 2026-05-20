@@ -3,6 +3,7 @@ import { ref, onMounted, onUnmounted, nextTick } from 'vue'
 import { fetchArticleList } from '@/api'
 import ArticleCard from '@/components/ArticleCard.vue'
 import Pagination from '@/components/Pagination.vue'
+import SearchBox from '@/components/SearchBox.vue'
 
 const BREAKPOINT = 768
 
@@ -19,6 +20,7 @@ const pageSize = ref(10)
 const loading = ref(false)
 const error = ref('')
 const articleSection = ref(null)
+const searchQuery = ref('')
 
 const scrollDownVisible = ref(true)
 
@@ -64,7 +66,7 @@ async function load(page) {
   loading.value = true
   error.value = ''
   try {
-    const data = await fetchArticleList(page, pageSize.value)
+    const data = await fetchArticleList(page, pageSize.value, searchQuery.value)
     articles.value = data.results
     total.value = data.count
     currentPage.value = page
@@ -75,6 +77,12 @@ async function load(page) {
   }
   await nextTick()
   setupObserver()
+}
+
+function onSearch(val) {
+  searchQuery.value = val
+  currentPage.value = 1
+  load(1)
 }
 
 function setupObserver() {
@@ -162,6 +170,8 @@ onUnmounted(() => {
     <!-- Article list section -->
     <section ref="articleSection" class="articles-section container">
       <!-- <h2 class="section-title">文章</h2> -->
+
+      <SearchBox v-model="searchQuery" @search="onSearch" />
 
       <div v-if="loading" class="state-text">加载中...</div>
       <div v-else-if="error" class="state-text error">{{ error }}</div>

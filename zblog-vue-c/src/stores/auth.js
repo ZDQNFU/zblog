@@ -44,7 +44,8 @@ export const useAuthStore = defineStore('auth', () => {
       user.value = u
       localStorage.setItem('user', JSON.stringify(u))
     } catch {
-      // token expired or invalid — ignore
+      // token expired / invalid / network error — clear stale auth
+      logout()
     }
   }
 

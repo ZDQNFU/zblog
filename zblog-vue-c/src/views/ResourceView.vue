@@ -157,7 +157,7 @@ onMounted(async () => {
 .link-card {
   min-width: 0;
 
-  background: #ffffff;
+  background: var(--color-surface);
 
   border-radius: 16px;
   border-top: 4px solid #3b82f6;
@@ -176,8 +176,7 @@ onMounted(async () => {
     transform 0.2s ease,
     box-shadow 0.2s ease;
 
-  box-shadow:
-    0 2px 8px rgba(0, 0, 0, 0.04);
+  box-shadow: var(--shadow-card);
 
   overflow: hidden;
 
@@ -187,8 +186,7 @@ onMounted(async () => {
 .link-card:hover {
   transform: translateY(-4px);
 
-  box-shadow:
-    0 10px 30px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow-card-hover);
 }
 
 /* =========================

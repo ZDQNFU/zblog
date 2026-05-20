@@ -50,7 +50,7 @@ def _extract_messages(checkpoint):
 
         if isinstance(content, str) and content.strip():
             result.append({
-                'role': 'human' if msg_type == 'human' else 'ai',
+                'role': 'user' if msg_type == 'human' else 'ai',
                 'content': content,
             })
     return result

@@ -135,7 +135,7 @@ onMounted(load)
           :class="['msg-row', m.role]"
         >
           <div class="msg-bubble">
-            <span class="msg-role">{{ m.role === 'human' ? '用户' : 'AI' }}</span>
+            <span class="msg-role">{{ m.role === 'user' ? '用户' : 'AI' }}</span>
             <p class="msg-content">{{ m.content }}</p>
           </div>
         </div>
@@ -168,7 +168,7 @@ onMounted(load)
 .detail-body { max-height: 500px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
 
 .msg-row { display: flex; }
-.msg-row.human { justify-content: flex-end; }
+.msg-row.user { justify-content: flex-end; }
 .msg-row.ai { justify-content: flex-start; }
 
 .msg-bubble {
@@ -178,8 +178,8 @@ onMounted(load)
   font-size: 0.88rem;
   line-height: 1.6;
 }
-.msg-row.human .msg-bubble { background: #e6f4ff; color: #1f2937; }
-.msg-row.ai .msg-bubble { background: #f0f0f0; color: #1f2937; }
+.msg-row.user .msg-bubble { background: var(--color-primary); color: #fff; }
+.msg-row.ai .msg-bubble { background: var(--color-surface); color: var(--color-text); }
 
 .msg-role {
   display: block;

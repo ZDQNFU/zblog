@@ -2,10 +2,12 @@
 import { ref, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { useTheme } from '@/composables/useTheme'
 
 const router = useRouter()
 const route = useRoute()
 const auth = useAuthStore()
+const { isDark, toggle: toggleTheme } = useTheme()
 
 const collapsed = ref(false)
 const sidebarWidth = computed(() => collapsed.value ? '64px' : '200px')
@@ -74,6 +76,22 @@ function handleLogout() {
           <span class="header-title">管理后台</span>
         </div>
         <div class="header-right">
+          <button class="theme-toggle-btn" @click="toggleTheme" :title="isDark ? '切换亮色模式' : '切换暗黑模式'">
+            <svg v-if="isDark" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="5"/>
+              <line x1="12" y1="1" x2="12" y2="3"/>
+              <line x1="12" y1="21" x2="12" y2="23"/>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+              <line x1="1" y1="12" x2="3" y2="12"/>
+              <line x1="21" y1="12" x2="23" y2="12"/>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+            </svg>
+            <svg v-else width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+            </svg>
+          </button>
           <span class="header-user">{{ auth.user?.username }}</span>
           <button class="logout-btn" @click="handleLogout">
             <el-icon><SwitchButton /></el-icon>
@@ -172,7 +190,7 @@ function handleLogout() {
   align-items: center;
   height: 52px;
   padding: 0 20px;
-  background: #fff;
+  background: var(--color-surface);
   border-bottom: 1px solid var(--color-border);
   flex-shrink: 0;
 }
@@ -192,12 +210,12 @@ function handleLogout() {
   border: none;
   border-radius: 6px;
   background: transparent;
-  color: #606266;
+  color: var(--color-text-secondary);
   cursor: pointer;
   transition: background 0.15s;
 }
 .toggle-btn:hover {
-  background: #f0f2f5;
+  background: var(--color-bg);
 }
 
 .header-title {
@@ -224,8 +242,8 @@ function handleLogout() {
   padding: 6px 14px;
   border: 1px solid var(--color-border);
   border-radius: 6px;
-  background: #fff;
-  color: #606266;
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
   font-size: 0.85rem;
   cursor: pointer;
   transition: color 0.15s, border-color 0.15s, background 0.15s;
@@ -234,6 +252,26 @@ function handleLogout() {
   color: #f56c6c;
   border-color: #f56c6c;
   background: #fef0f0;
+}
+
+.theme-toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  flex-shrink: 0;
+}
+.theme-toggle-btn:hover {
+  background: var(--color-bg);
+  color: var(--color-primary);
+  border-color: var(--color-primary);
 }
 
 /* ---- Main content ---- */

@@ -18,8 +18,12 @@ async function request(url, options = {}) {
 
 // ==================== Articles ====================
 
-export function fetchArticleList(page = 1, pageSize = 10) {
-  return request(`${ARTICLES_BASE}/list/?page=${page}&page_size=${pageSize}`)
+export function fetchArticleList(page = 1, pageSize = 10, search = '') {
+  let url = `${ARTICLES_BASE}/list/?page=${page}&page_size=${pageSize}`
+  if (search) {
+    url += `&search=${encodeURIComponent(search)}`
+  }
+  return request(url)
 }
 
 export function fetchArticleDetail(id) {

@@ -17,6 +17,32 @@
   --max-width: 900px;
   --navbar-height: 56px;
   --breakpoint: 768px;
+
+  --navbar-bg: rgba(255, 255, 255, 0.55);
+  --navbar-bg-scrolled: rgba(239, 246, 255, 0.82);
+  --back-top-bg: rgba(255, 255, 255, 0.85);
+  --chat-tip-bg: #fff;
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --shadow-card-hover: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --footer-bg: linear-gradient(135deg, rgba(239, 246, 255, 0.95), rgba(219, 234, 254, 0.9));
+  --footer-border: rgba(59, 130, 246, 0.15);
+}
+
+[data-theme="dark"] {
+  --color-bg: #0f172a;
+  --color-surface: #1e293b;
+  --color-primary: #60a5fa;
+  --color-text: #e2e8f0;
+  --color-text-secondary: #94a3b8;
+  --color-border: #334155;
+  --navbar-bg: rgba(15, 23, 42, 0.75);
+  --navbar-bg-scrolled: rgba(15, 23, 42, 0.88);
+  --back-top-bg: rgba(30, 41, 59, 0.85);
+  --chat-tip-bg: #1e293b;
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-card-hover: 0 4px 12px rgba(0, 0, 0, 0.45);
+  --footer-bg: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.9));
+  --footer-border: rgba(96, 165, 250, 0.15);
 }
 
 html {
@@ -29,6 +55,7 @@ body {
   color: var(--color-text);
   line-height: 1.6;
   overflow-x: hidden;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 a {

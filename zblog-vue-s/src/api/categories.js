@@ -14,6 +14,10 @@ export function updateCategory(id, data) {
   return api.patch(`${BASE}/${id}/`, data)
 }
 
+export function fetchCategory(id) {
+  return api.get(`${BASE}/${id}/`)
+}
+
 export function deleteCategory(id) {
   return api.delete(`${BASE}/${id}/`)
 }

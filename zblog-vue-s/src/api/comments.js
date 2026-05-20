@@ -10,6 +10,10 @@ export function updateComment(id, data) {
   return api.patch(`${BASE}/${id}/`, data)
 }
 
+export function fetchComment(id) {
+  return api.get(`${BASE}/${id}/`)
+}
+
 export function deleteComment(id) {
   return api.delete(`${BASE}/${id}/`)
 }

@@ -1,17 +1,20 @@
 <script setup>
-import { ref, watch, nextTick, onMounted } from 'vue'
+import { ref, watch, nextTick, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { MdPreview } from 'md-editor-v3'
 import 'md-editor-v3/lib/style.css'
 import { fetchArticleDetail, likeArticle, unlikeArticle, verifyArticlePassword } from '@/api'
 import { extractTOCFromMarkdown, extractTOCFromContainer } from '@/utils/toc'
 import { useAuthStore } from '@/stores/auth'
+import { useTheme } from '@/composables/useTheme'
 import CommentForm from '@/components/CommentForm.vue'
 import AuthModal from '@/components/AuthModal.vue'
 import ArticleTOC from '@/components/ArticleTOC.vue'
 
 const route = useRoute()
 const auth = useAuthStore()
+const { isDark } = useTheme()
+const previewTheme = computed(() => isDark.value ? 'vuepress' : 'github')
 
 const article = ref(null)
 const loading = ref(false)
@@ -239,7 +242,8 @@ onMounted(async () => {
           <MdPreview class="md"
             v-if="article.content_md"
             :modelValue="article.content_md"
-            previewTheme="github"
+            :theme="isDark ? 'dark' : 'light'"
+            :previewTheme="previewTheme"
           />
           <div v-else v-html="article.content_html"></div>
         </div>
@@ -510,7 +514,7 @@ onMounted(async () => {
   margin: 1em 0;
   padding: 0.5em 1em;
   color: var(--color-text-secondary);
-  background: #f9fafb;
+  background: var(--color-bg);
   border-radius: 0 6px 6px 0;
 }
 .article-content :deep(a) {
@@ -528,7 +532,7 @@ onMounted(async () => {
   text-align: left;
 }
 .article-content :deep(th) {
-  background: #f9fafb;
+  background: var(--color-bg);
   font-weight: 600;
 }
 .article-content :deep(ul),

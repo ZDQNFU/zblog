@@ -133,7 +133,7 @@ onMounted(load)
 
 <style scoped>
 .page-title { font-size: 1.4rem; font-weight: 700; margin-bottom: 24px; }
-.loading-text { text-align: center; color: #999; padding: 80px 0; }
+.loading-text { text-align: center; color: var(--color-text-secondary); padding: 80px 0; }
 
 .stat-cards {
   display: grid;

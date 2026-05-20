@@ -5,6 +5,9 @@ import { fetchArticles, deleteArticle } from '@/api/articles'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Search } from '@element-plus/icons-vue'
 
+const detailVisible = ref(false)
+const detailRow = ref(null)
+
 const router = useRouter()
 
 const articles = ref([])
@@ -102,9 +105,10 @@ onMounted(() => { load() })
       <el-table-column label="最后修改" width="110">
         <template #default="{ row }">{{ formatDate(row.updated_at) }}</template>
       </el-table-column>
-      <el-table-column label="操作" width="160" fixed="right">
+      <el-table-column label="操作" width="240" fixed="right">
         <template #default="{ row }">
-          <el-button size="small" @click="router.push(`/articles/edit/${row.id}`)">编辑</el-button>
+          <el-button size="small" type="primary" @click="router.push(`/articles/edit/${row.id}`)">编辑</el-button>
+          <el-button size="small" class="detail-btn" @click="detailRow = row; detailVisible = true">详情</el-button>
           <el-button size="small" type="danger" @click="handleDelete(row)">删除</el-button>
         </template>
       </el-table-column>
@@ -118,6 +122,25 @@ onMounted(() => { load() })
       />
     </div>
 
+    <el-dialog v-model="detailVisible" title="文章详情" width="560px" destroy-on-close>
+      <el-descriptions v-if="detailRow" :column="2" border>
+        <el-descriptions-item label="标题" :span="2">{{ detailRow.title }}</el-descriptions-item>
+        <el-descriptions-item label="作者">{{ detailRow.author_name || '-' }}</el-descriptions-item>
+        <el-descriptions-item label="状态">
+          <el-tag :type="statusTag(detailRow.status)" size="small">{{ statusText(detailRow.status) }}</el-tag>
+        </el-descriptions-item>
+        <el-descriptions-item label="分类">{{ detailRow.category?.name || '-' }}</el-descriptions-item>
+        <el-descriptions-item label="浏览">{{ detailRow.view_count ?? 0 }}</el-descriptions-item>
+        <el-descriptions-item label="点赞">{{ detailRow.like_count ?? 0 }}</el-descriptions-item>
+        <el-descriptions-item label="标签" :span="2">
+          <el-tag v-for="t in detailRow.tags" :key="t.id" size="small" :color="t.color" style="color:#fff;margin:0 2px;">{{ t.name }}</el-tag>
+          <span v-if="!detailRow.tags?.length">-</span>
+        </el-descriptions-item>
+        <el-descriptions-item label="发布时间">{{ formatDate(detailRow.published_at) }}</el-descriptions-item>
+        <el-descriptions-item label="最后修改">{{ formatDate(detailRow.updated_at) }}</el-descriptions-item>
+      </el-descriptions>
+    </el-dialog>
+
   </div>
 </template>
 
@@ -126,4 +149,15 @@ onMounted(() => { load() })
 .page-header h2 { font-size: 1.3rem; white-space: nowrap; }
 .header-right { display: flex; align-items: center; gap: 12px; }
 .pagination-wrap { margin-top: 20px; display: flex; justify-content: center; }
+
+.detail-btn {
+  --el-button-bg-color: #e7a642;
+  --el-button-border-color: #e7a642;
+  --el-button-text-color: #fff;
+}
+.detail-btn:hover {
+  --el-button-bg-color: #d4952e;
+  --el-button-border-color: #d4952e;
+  --el-button-text-color: #fff;
+}
 </style>

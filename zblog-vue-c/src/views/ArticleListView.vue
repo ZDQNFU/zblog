@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { fetchArticleList } from '@/api'
 import ArticleCard from '@/components/ArticleCard.vue'
 import Pagination from '@/components/Pagination.vue'
+import SearchBox from '@/components/SearchBox.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -14,6 +15,7 @@ const currentPage = ref(1)
 const pageSize = ref(10)
 const loading = ref(false)
 const error = ref('')
+const searchQuery = ref(route.query.search || '')
 
 let observer = null
 
@@ -36,7 +38,7 @@ async function load(page) {
   loading.value = true
   error.value = ''
   try {
-    const data = await fetchArticleList(page, pageSize.value)
+    const data = await fetchArticleList(page, pageSize.value, searchQuery.value)
     articles.value = data.results
     total.value = data.count
     currentPage.value = page
@@ -49,8 +51,13 @@ async function load(page) {
   setupObserver()
 }
 
+function onSearch(val) {
+  searchQuery.value = val
+  router.push({ query: { search: val || undefined, page: 1 } })
+}
+
 function onPageChange(page) {
-  router.push({ query: { page } })
+  router.push({ query: { search: searchQuery.value || undefined, page } })
   window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
@@ -60,9 +67,10 @@ onMounted(() => {
 })
 
 watch(
-  () => route.query.page,
-  (newPage) => {
-    load(Number(newPage) || 1)
+  () => ({ page: route.query.page, search: route.query.search }),
+  ({ page, search }) => {
+    searchQuery.value = search || ''
+    load(Number(page) || 1)
   },
 )
 
@@ -74,9 +82,11 @@ onUnmounted(() => {
 <template>
   <div class="article-list-page container">
     <header class="page-header">
-      <h1>文章</h1>
+      <!-- <h1>文章</h1> -->
     </header>
-    
+
+    <SearchBox v-model="searchQuery" @search="onSearch" />
+
     <div v-if="loading" class="state-text">加载中...</div>
     <div v-else-if="error" class="state-text error">{{ error }}</div>
     <div v-else-if="!articles.length" class="state-text">暂无文章</div>

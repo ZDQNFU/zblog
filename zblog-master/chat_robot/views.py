@@ -96,7 +96,7 @@ class ChatStreamView(APIView):
         def event_stream():
             ChatMessage.objects.create(
                 user=request.user,
-                role='human',
+                role='user',
                 content=message,
                 token_count=_estimate_tokens(message),
             )

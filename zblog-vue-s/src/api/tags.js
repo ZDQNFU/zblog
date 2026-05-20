@@ -14,6 +14,10 @@ export function updateTag(id, data) {
   return api.patch(`${BASE}/${id}/`, data)
 }
 
+export function fetchTag(id) {
+  return api.get(`${BASE}/${id}/`)
+}
+
 export function deleteTag(id) {
   return api.delete(`${BASE}/${id}/`)
 }

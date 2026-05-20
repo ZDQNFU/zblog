@@ -146,7 +146,7 @@ onUnmounted(() => {
 .captcha-display {
   width: 150px;
   height: 40px;
-  background: #f5f7fa;
+  background: var(--color-bg);
   border: 1px solid var(--color-border);
   border-radius: 6px;
   display: flex;
@@ -157,11 +157,11 @@ onUnmounted(() => {
   font-size: 1.1rem;
   font-weight: 700;
   letter-spacing: 0.08em;
-  color: #333;
+  color: var(--color-text);
   transition: background 0.2s;
 }
 .captcha-display:hover {
-  background: #ebeef5;
+  background: var(--color-border);
 }
 .captcha-loading {
   font-size: 0.85rem;

@@ -14,6 +14,10 @@ export function updateLink(id, data) {
   return api.patch(`${BASE}/${id}/`, data)
 }
 
+export function fetchLink(id) {
+  return api.get(`${BASE}/${id}/`)
+}
+
 export function deleteLink(id) {
   return api.delete(`${BASE}/${id}/`)
 }

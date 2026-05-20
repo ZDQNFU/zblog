@@ -25,6 +25,7 @@ class ArticleListView(generics.ListAPIView):
     """C端：已发布+私密文章列表（带分页）"""
     serializer_class = ArticleListSerializer
     pagination_class = ArticleListPagination
+    search_fields = ['title', 'summary', 'content_md']
 
     def get_queryset(self):
         return (

@@ -7,7 +7,10 @@ import { fetchArticle, createArticle, updateArticle } from '@/api/articles'
 import { fetchCategories } from '@/api/categories'
 import { fetchTags } from '@/api/tags'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { useTheme } from '@/composables/useTheme'
 import { ArrowLeft } from '@element-plus/icons-vue'
+
+const { isDark } = useTheme()
 
 const route = useRoute()
 const router = useRouter()
@@ -113,6 +116,7 @@ onMounted(() => { loadOptions(); loadArticle() })
         <MdEditor
           v-model="form.content_md"
           :preview="true"
+          :theme="isDark ? 'dark' : 'light'"
           language="en-US"
           style="height: 100%"
         />
@@ -171,7 +175,7 @@ onMounted(() => { loadOptions(); loadArticle() })
   inset: 0;
   display: flex;
   flex-direction: column;
-  background: #fff;
+  background: var(--color-bg);
   z-index: 100;
 }
 
@@ -181,8 +185,8 @@ onMounted(() => { loadOptions(); loadArticle() })
   justify-content: space-between;
   padding: 0 16px;
   height: 52px;
-  border-bottom: 1px solid var(--el-border-color-light);
-  background: #fff;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface);
   flex-shrink: 0;
 }
 
@@ -194,6 +198,7 @@ onMounted(() => { loadOptions(); loadArticle() })
 .header-left h2 {
   font-size: 1.1rem;
   font-weight: 600;
+  color: var(--color-text);
 }
 
 .header-right {
@@ -219,7 +224,7 @@ onMounted(() => { loadOptions(); loadArticle() })
   border-left: 1px solid var(--el-border-color-light);
   padding: 20px;
   overflow-y: auto;
-  background: #fafafa;
+  background: var(--color-bg);
 }
 
 .meta-panel h3 {

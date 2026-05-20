@@ -2,10 +2,12 @@
 import { ref, nextTick, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { streamChat, fetchChatHistory } from '@/api'
+import { useAuthStore } from '@/stores/auth'
 import { ElMessage } from 'element-plus'
 import { ArrowLeft } from '@element-plus/icons-vue'
 
 const router = useRouter()
+const auth = useAuthStore()
 
 const messages = ref([])
 const inputText = ref('')
@@ -63,6 +65,10 @@ function handleKeydown(e) {
 }
 
 async function loadHistory() {
+  if (!auth.isAuthenticated) {
+    addMessage('ai', '哼！又来了个烦人的家伙……本小姐今天心情还行，有什么话快说！')
+    return
+  }
   loadingHistory.value = true
   try {
     const data = await fetchChatHistory()
@@ -129,7 +135,7 @@ onMounted(() => {
   inset: 0;
   display: flex;
   flex-direction: column;
-  background: #f5f5f5;
+  background: var(--color-bg);
   z-index: 50;
 }
 
@@ -139,14 +145,15 @@ onMounted(() => {
   gap: 12px;
   padding: 0 16px;
   height: 56px;
-  background: #fff;
-  border-bottom: 1px solid #e5e7eb;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
   flex-shrink: 0;
 }
 .chat-header h2 {
   flex: 1;
   font-size: 1.1rem;
   font-weight: 600;
+  color: var(--color-text);
 }
 .chat-status {
   font-size: 0.8rem;
@@ -189,14 +196,14 @@ onMounted(() => {
   word-break: break-word;
 }
 .message-row.user .message-bubble {
-  background: var(--color-primary, #3b82f6);
+  background: #03dc6c;
   color: #fff;
   border-bottom-right-radius: 4px;
 }
 .message-row.ai .message-bubble {
-  background: #fff;
-  color: #1f2937;
-  border: 1px solid #e5e7eb;
+  background: var(--color-surface);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
   border-bottom-left-radius: 4px;
 }
 
@@ -209,7 +216,7 @@ onMounted(() => {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #9ca3af;
+  background: var(--color-text-secondary);
   animation: dot-bounce 1.4s infinite ease-in-out both;
 }
 .typing-dot span:nth-child(1) { animation-delay: -0.32s; }
@@ -226,8 +233,8 @@ onMounted(() => {
   gap: 10px;
   align-items: flex-end;
   padding: 12px 16px;
-  background: #fff;
-  border-top: 1px solid #e5e7eb;
+  background: var(--color-surface);
+  border-top: 1px solid var(--color-border);
   flex-shrink: 0;
 }
 .chat-input-area .el-textarea {

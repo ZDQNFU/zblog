@@ -71,11 +71,11 @@ function formatDate(dateStr) {
   border-radius: var(--radius);
   overflow: hidden;
   transition: transform 0.15s, box-shadow 0.15s;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow-card);
 }
 .card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-card-hover);
 }
 
 .card-cover img {

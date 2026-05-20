@@ -14,6 +14,10 @@ export function updateUser(id, data) {
   return api.patch(`${BASE}/${id}/`, data)
 }
 
+export function fetchUser(id) {
+  return api.get(`${BASE}/${id}/`)
+}
+
 export function deleteUser(id) {
   return api.delete(`${BASE}/${id}/`)
 }

@@ -56,10 +56,10 @@ onMounted(() => {
 
 <style scoped>
 .site-footer {
-  background: linear-gradient(135deg, rgba(239, 246, 255, 0.95), rgba(219, 234, 254, 0.9));
+  background: var(--footer-bg);
   backdrop-filter: saturate(180%) blur(10px);
   -webkit-backdrop-filter: saturate(180%) blur(10px);
-  border-top: 1px solid rgba(59, 130, 246, 0.15);
+  border-top: 1px solid var(--footer-border);
   padding: 28px 0;
   margin-top: auto;
 }

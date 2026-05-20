@@ -12,6 +12,9 @@ const pageSize = ref(10)
 const search = ref('')
 let searchTimer = null
 
+const detailVisible = ref(false)
+const detailRow = ref(null)
+
 const dialogVisible = ref(false)
 const dialogTitle = ref('新建资源')
 const form = ref({ name: '', url: '', image_url: '', color: '#3b82f6', description: '' })
@@ -127,9 +130,10 @@ onMounted(load)
       <el-table-column label="最后修改" min-width="110">
         <template #default="{ row }">{{ formatDate(row.updated_at) }}</template>
       </el-table-column>
-      <el-table-column label="操作" min-width="140">
+      <el-table-column label="操作" min-width="220">
         <template #default="{ row }">
-          <el-button size="small" @click="openDialog(row)">编辑</el-button>
+          <el-button size="small" type="primary" @click="openDialog(row)">编辑</el-button>
+          <el-button size="small" class="detail-btn" @click="detailRow = row; detailVisible = true">详情</el-button>
           <el-button size="small" type="danger" @click="handleDelete(row)">删除</el-button>
         </template>
       </el-table-column>
@@ -142,6 +146,24 @@ onMounted(load)
         @current-change="onPageChange"
       />
     </div>
+
+    <el-dialog v-model="detailVisible" title="资源详情" width="500px" destroy-on-close>
+      <el-descriptions v-if="detailRow" :column="1" border>
+        <el-descriptions-item label="名称">{{ detailRow.name }}</el-descriptions-item>
+        <el-descriptions-item label="URL">{{ detailRow.url }}</el-descriptions-item>
+        <el-descriptions-item label="图片URL">{{ detailRow.image_url || '-' }}</el-descriptions-item>
+        <el-descriptions-item label="主题色">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span :style="{ display:'inline-block',width:20,height:20,borderRadius:4,background:detailRow.color}"></span>
+            {{ detailRow.color }}
+          </div>
+        </el-descriptions-item>
+        <el-descriptions-item label="简介">{{ detailRow.description || '-' }}</el-descriptions-item>
+        <el-descriptions-item label="创建人">{{ detailRow.created_by_name || '-' }}</el-descriptions-item>
+        <el-descriptions-item label="创建时间">{{ formatDate(detailRow.created_at) }}</el-descriptions-item>
+        <el-descriptions-item label="最后修改">{{ formatDate(detailRow.updated_at) }}</el-descriptions-item>
+      </el-descriptions>
+    </el-dialog>
 
     <el-dialog v-model="dialogVisible" :title="dialogTitle" width="520px" destroy-on-close>
       <el-form :model="form" label-width="70px">
@@ -175,4 +197,15 @@ onMounted(load)
 .header-right { display: flex; align-items: center; gap: 12px; }
 .pagination-wrap { margin-top: 20px; display: flex; justify-content: center; }
 .color-block { width: 24px; height: 24px; border-radius: 4px; margin: 0 auto; }
+
+.detail-btn {
+  --el-button-bg-color: #e7a642;
+  --el-button-border-color: #e7a642;
+  --el-button-text-color: #fff;
+}
+.detail-btn:hover {
+  --el-button-bg-color: #d4952e;
+  --el-button-border-color: #d4952e;
+  --el-button-text-color: #fff;
+}
 </style>
