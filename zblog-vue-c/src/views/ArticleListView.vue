@@ -5,9 +5,13 @@ import { fetchArticleList } from '@/api'
 import ArticleCard from '@/components/ArticleCard.vue'
 import Pagination from '@/components/Pagination.vue'
 import SearchBox from '@/components/SearchBox.vue'
+import SidePanel from '@/components/SidePanel.vue'
 
 const route = useRoute()
 const router = useRouter()
+
+const SIDEPANEL_BREAKPOINT = 1200
+const showSidePanel = ref(window.innerWidth >= SIDEPANEL_BREAKPOINT)
 
 const articles = ref([])
 const total = ref(0)
@@ -18,6 +22,10 @@ const error = ref('')
 const searchQuery = ref(route.query.search || '')
 
 let observer = null
+
+function onResize() {
+  showSidePanel.value = window.innerWidth >= SIDEPANEL_BREAKPOINT
+}
 
 function setupObserver() {
   if (observer) observer.disconnect()
@@ -62,6 +70,7 @@ function onPageChange(page) {
 }
 
 onMounted(() => {
+  window.addEventListener('resize', onResize)
   const p = Number(route.query.page) || 1
   load(p)
 })
@@ -75,38 +84,45 @@ watch(
 )
 
 onUnmounted(() => {
+  window.removeEventListener('resize', onResize)
   if (observer) observer.disconnect()
 })
 </script>
 
 <template>
-  <div class="article-list-page container">
-    <header class="page-header">
-      <!-- <h1>文章</h1> -->
-    </header>
+  <div class="article-list-page container-wide">
+    <div class="articles-layout">
+      <div class="articles-main">
+        <header class="page-header">
+          <!-- <h1>文章</h1> -->
+        </header>
 
-    <SearchBox v-model="searchQuery" @search="onSearch" />
+        <SearchBox v-model="searchQuery" @search="onSearch" />
 
-    <div v-if="loading" class="state-text">加载中...</div>
-    <div v-else-if="error" class="state-text error">{{ error }}</div>
-    <div v-else-if="!articles.length" class="state-text">暂无文章</div>
+        <div v-if="loading" class="state-text">加载中...</div>
+        <div v-else-if="error" class="state-text error">{{ error }}</div>
+        <div v-else-if="!articles.length" class="state-text">暂无文章</div>
 
-    <div v-else class="card-grid">
-      <ArticleCard
-        v-for="(article, i) in articles"
-        :key="article.id"
-        :article="article"
-        class="fade-up"
-        :style="{ transitionDelay: i * 0.08 + 's' }"
-      />
+        <div v-else class="card-grid">
+          <ArticleCard
+            v-for="(article, i) in articles"
+            :key="article.id"
+            :article="article"
+            class="fade-up"
+            :style="{ transitionDelay: i * 0.08 + 's' }"
+          />
+        </div>
+
+        <Pagination
+          :current="currentPage"
+          :total="total"
+          :page-size="pageSize"
+          @change="onPageChange"
+        />
+      </div>
+
+      <SidePanel v-if="showSidePanel" />
     </div>
-
-    <Pagination
-      :current="currentPage"
-      :total="total"
-      :page-size="pageSize"
-      @change="onPageChange"
-    />
   </div>
 </template>
 
@@ -114,6 +130,17 @@ onUnmounted(() => {
 .article-list-page {
   padding-top: calc(var(--navbar-height) + 32px);
   padding-bottom: 48px;
+}
+
+.articles-layout {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+}
+
+.articles-main {
+  flex: 1;
+  min-width: 0;
 }
 
 .page-header h1 {

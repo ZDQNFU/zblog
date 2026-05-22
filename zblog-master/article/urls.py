@@ -1,6 +1,6 @@
 from django.urls import path
 
-from article.views.c_views import ArticleListView, ArticleDetailView, ArticleVerifyView, CommentCreateView, LikeToggleView
+from article.views.c_views import ArticleListView, ArticleDetailView, ArticleVerifyView, CommentCreateView, LikeToggleView, TagListView, RandomArticleView
 from article.views.s_views import (
     SArticleListCreateView,
     SArticleRetrieveUpdateDestroyView,
@@ -16,9 +16,13 @@ urlpatterns = [
     # ================= C端（公开接口） =================
     # 已发布文章列表（分页）
     path('c/list/', ArticleListView.as_view(), name='c_article_list'),
-    # 评论创建（需登录）—— 必须在 c/<str:pk>/ 之前，否则 pk 会匹配 'comments'
+    # 评论创建（需登录）
     path('c/comments/', CommentCreateView.as_view(), name='c_comment_create'),
-    # 点赞/取消点赞（需登录）—— 必须在 c/<str:pk>/ 之前
+    # 标签列表
+    path('c/tags/', TagListView.as_view(), name='c_tag_list'),
+    # 随机推荐文章
+    path('c/random/', RandomArticleView.as_view(), name='c_random_articles'),
+    # 点赞/取消点赞（需登录）
     path('c/<str:pk>/like/', LikeToggleView.as_view(), name='c_article_like'),
     # 私密文章密码验证
     path('c/<str:pk>/verify/', ArticleVerifyView.as_view(), name='c_article_verify'),

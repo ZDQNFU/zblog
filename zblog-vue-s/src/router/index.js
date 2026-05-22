@@ -63,6 +63,18 @@ const router = createRouter({
       component: () => import('@/views/ChatManageView.vue'),
       meta: { requiresAuth: true, layout: 'admin' },
     },
+    {
+      path: '/tracking',
+      name: 'tracking',
+      component: () => import('@/views/TrackingManageView.vue'),
+      meta: { requiresAuth: true, layout: 'admin' },
+    },
+    {
+      path: '/messages',
+      name: 'messages',
+      component: () => import('@/views/MessageManageView.vue'),
+      meta: { requiresAuth: true, layout: 'admin' },
+    },
   ],
 })
 

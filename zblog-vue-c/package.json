@@ -4,13 +4,15 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --host 0.0.0.0",
     "build": "vite build",
     "preview": "vite preview",
-    "format": "prettier --write --experimental-cli src/"
+    "format": "prettier --write --experimental-cli src/",
+    "serve": "vue-cli-service serve --host 0.0.0.0"
   },
   "dependencies": {
     "@element-plus/icons-vue": "^2.3.2",
+    "comment-core-library": "^0.11.1",
     "element-plus": "^2.14.0",
     "highlight.js": "^11.11.1",
     "marked": "^18.0.3",

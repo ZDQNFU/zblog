@@ -23,6 +23,7 @@ const navItems = [
   { to: '/', label: '首页' },
   { to: '/articles', label: '文章' },
   { to: '/resources', label: '资源' },
+  { to: '/message-board', label: '留言板' },
   { type: 'chat', label: '聊天' },
 ]
 
@@ -83,10 +84,26 @@ onUnmounted(() => {
       <router-link to="/" class="logo">ZBlog</router-link>
 
       <nav class="nav-links desktop-nav">
-        <router-link to="/" class="nav-link">首页</router-link>
-        <router-link to="/articles" class="nav-link">文章</router-link>
-        <router-link to="/resources" class="nav-link">资源</router-link>
-        <a class="nav-link" @click.prevent="handleChatClick" href="#">聊天</a>
+        <router-link to="/" class="nav-link">
+          <svg width="16" height="16" viewBox="0 0 24 24"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" fill="#409eff" stroke="#409eff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><polyline points="9 22 9 12 15 12 15 22" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          首页
+        </router-link>
+        <router-link to="/articles" class="nav-link">
+          <svg width="16" height="16" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" fill="#67c23a" stroke="#67c23a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><polyline points="14 2 14 8 20 8" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><line x1="16" y1="13" x2="8" y2="13" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"/><line x1="16" y1="17" x2="8" y2="17" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+          文章
+        </router-link>
+        <router-link to="/resources" class="nav-link">
+          <svg width="16" height="16" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#e6a23c" stroke="#e6a23c" stroke-width="1.5"/><path d="M8 12h8M12 8v8" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/></svg>
+          资源
+        </router-link>
+        <router-link to="/message-board" class="nav-link">
+          <svg width="16" height="16" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3" fill="#f97316" stroke="#f97316" stroke-width="1.5"/><line x1="8" y1="8" x2="16" y2="8" stroke="#fff" stroke-width="2" stroke-linecap="round"/><line x1="8" y1="12" x2="16" y2="12" stroke="#fff" stroke-width="2" stroke-linecap="round"/><line x1="8" y1="16" x2="12" y2="16" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+          留言板
+        </router-link>
+        <a class="nav-link" @click.prevent="handleChatClick" href="#">
+          <svg width="16" height="16" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" fill="#8b5cf6" stroke="#8b5cf6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9" cy="10" r="1.5" fill="#fff"/><circle cx="15" cy="10" r="1.5" fill="#fff"/></svg>
+          聊天
+        </a>
       </nav>
 
       <div class="nav-actions">
@@ -132,13 +149,20 @@ onUnmounted(() => {
           :class="['mobile-nav-item', { active: isActive(item.to) }]"
           @click="closeMobileMenu"
         >
+          <svg v-if="item.to === '/'" width="20" height="20" viewBox="0 0 24 24"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" fill="#409eff" stroke="#409eff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><polyline points="9 22 9 12 15 12 15 22" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <svg v-else-if="item.to === '/articles'" width="20" height="20" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" fill="#67c23a" stroke="#67c23a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><polyline points="14 2 14 8 20 8" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><line x1="16" y1="13" x2="8" y2="13" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"/><line x1="16" y1="17" x2="8" y2="17" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+          <svg v-else-if="item.to === '/resources'" width="20" height="20" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#e6a23c" stroke="#e6a23c" stroke-width="1.5"/><path d="M8 12h8M12 8v8" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/></svg>
+          <svg v-else-if="item.to === '/message-board'" width="20" height="20" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3" fill="#f97316" stroke="#f97316" stroke-width="1.5"/><line x1="8" y1="8" x2="16" y2="8" stroke="#fff" stroke-width="2" stroke-linecap="round"/><line x1="8" y1="12" x2="16" y2="12" stroke="#fff" stroke-width="2" stroke-linecap="round"/><line x1="8" y1="16" x2="12" y2="16" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
           {{ item.label }}
         </router-link>
         <a
           class="mobile-nav-item"
           @click.prevent="handleChatClick"
           href="#"
-        >聊天</a>
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" fill="#8b5cf6" stroke="#8b5cf6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9" cy="10" r="1.5" fill="#fff"/><circle cx="15" cy="10" r="1.5" fill="#fff"/></svg>
+          聊天
+        </a>
       </nav>
     </aside>
 
@@ -222,7 +246,9 @@ onUnmounted(() => {
 }
 
 .mobile-nav-item {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 10px;
   padding: 14px 24px;
   font-size: 0.95rem;
   color: #aaa;
@@ -310,6 +336,9 @@ onUnmounted(() => {
   padding: 4px 0;
   border-bottom: 2px solid transparent;
   transition: color 0.2s, border-color 0.25s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 .nav-link:hover,
 .nav-link.router-link-exact-active {

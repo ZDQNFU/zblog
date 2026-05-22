@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { createComment } from '@/api'
+import EmojiPicker from '@/components/EmojiPicker.vue'
 
 const props = defineProps({
   articleId: { type: String, required: true },
@@ -14,6 +15,8 @@ const auth = useAuthStore()
 const content = ref('')
 const submitting = ref(false)
 const error = ref('')
+const showEmoji = ref(false)
+const textareaRef = ref(null)
 
 async function handleSubmit() {
   if (!content.value.trim()) return
@@ -30,6 +33,23 @@ async function handleSubmit() {
     submitting.value = false
   }
 }
+
+function insertEmoji(emoji) {
+  const el = textareaRef.value
+  if (el) {
+    const start = el.selectionStart
+    const end = el.selectionEnd
+    content.value = content.value.slice(0, start) + emoji + content.value.slice(end)
+    // Restore cursor after the inserted emoji
+    setTimeout(() => {
+      el.selectionStart = el.selectionEnd = start + emoji.length
+      el.focus()
+    }, 0)
+  } else {
+    content.value += emoji
+  }
+  showEmoji.value = false
+}
 </script>
 
 <template>
@@ -45,12 +65,24 @@ async function handleSubmit() {
         <button class="cancel-reply-btn" @click="emit('cancel-reply')">取消回复</button>
       </div>
       <div v-if="error" class="form-error">{{ error }}</div>
-      <textarea
-        v-model="content"
-        class="comment-textarea"
-        :placeholder="replyTo ? '写下你的回复...' : '写下你的评论...'"
-        rows="3"
-      ></textarea>
+      <div class="textarea-wrapper">
+        <textarea
+          ref="textareaRef"
+          v-model="content"
+          class="comment-textarea"
+          :placeholder="replyTo ? '写下你的回复...' : '写下你的评论...'"
+          rows="3"
+        ></textarea>
+        <button class="emoji-toggle-btn" @click="showEmoji = !showEmoji" title="表情">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M8 14s1.5 2 4 2 4-2 4-2"/>
+            <line x1="9" y1="9" x2="9.01" y2="9"/>
+            <line x1="15" y1="9" x2="15.01" y2="9"/>
+          </svg>
+        </button>
+      </div>
+      <EmojiPicker :visible="showEmoji" @select="insertEmoji" @close="showEmoji = false" />
       <div class="form-actions">
         <span class="form-note">以 <strong>{{ auth.user?.username }}</strong> 的身份发表</span>
         <button class="submit-btn" :disabled="submitting || !content.trim()" @click="handleSubmit">
@@ -128,9 +160,13 @@ async function handleSubmit() {
   margin-bottom: 8px;
 }
 
+.textarea-wrapper {
+  position: relative;
+}
+
 .comment-textarea {
   width: 100%;
-  padding: 12px;
+  padding: 12px 40px 12px 12px;
   border: 1px solid var(--color-border);
   border-radius: 8px;
   font-size: 0.9rem;
@@ -140,6 +176,27 @@ async function handleSubmit() {
   outline: none;
   transition: border-color 0.2s, box-shadow 0.2s;
   background: #fff;
+}
+
+.emoji-toggle-btn {
+  position: absolute;
+  right: 6px;
+  bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.emoji-toggle-btn:hover {
+  background: var(--color-bg);
+  color: var(--color-primary);
 }
 .comment-textarea:focus {
   border-color: var(--color-primary);

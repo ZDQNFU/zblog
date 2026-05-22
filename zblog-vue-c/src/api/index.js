@@ -139,6 +139,38 @@ export function fetchChatHistory() {
   return request(`${CHAT_BASE}/history/`)
 }
 
+// ==================== Tags ====================
+
+export function fetchTags() {
+  return request(`${ARTICLES_BASE}/tags/`)
+}
+
+export function fetchRandomArticles() {
+  return request(`${ARTICLES_BASE}/random/`)
+}
+
+const MESSAGE_BASE = '/api/messages/c'
+
+export function fetchMessages() {
+  return request(`${MESSAGE_BASE}/list/`)
+}
+
+export function createMessage(content) {
+  return request(`${MESSAGE_BASE}/create/`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ content }),
+  })
+}
+
+export function likeMessage(id) {
+  return request(`${MESSAGE_BASE}/${id}/like/`, { method: 'POST' })
+}
+
+export function unlikeMessage(id) {
+  return request(`${MESSAGE_BASE}/${id}/like/`, { method: 'DELETE' })
+}
+
 // ==================== Links ====================
 
 const LINKS_BASE = '/api/links/c/links'

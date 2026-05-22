@@ -5,6 +5,7 @@ import { streamChat, fetchChatHistory } from '@/api'
 import { useAuthStore } from '@/stores/auth'
 import { ElMessage } from 'element-plus'
 import { ArrowLeft } from '@element-plus/icons-vue'
+import EmojiPicker from '@/components/EmojiPicker.vue'
 
 const router = useRouter()
 const auth = useAuthStore()
@@ -14,6 +15,8 @@ const inputText = ref('')
 const sending = ref(false)
 const chatContainer = ref(null)
 const loadingHistory = ref(false)
+const showEmoji = ref(false)
+const chatInputRef = ref(null)
 
 function addMessage(role, content) {
   messages.value.push({ role, content, id: Date.now() })
@@ -62,6 +65,22 @@ function handleKeydown(e) {
     e.preventDefault()
     handleSend()
   }
+}
+
+function insertEmoji(emoji) {
+  const el = chatInputRef.value?.textarea
+  if (el) {
+    const start = el.selectionStart
+    const end = el.selectionEnd
+    inputText.value = inputText.value.slice(0, start) + emoji + inputText.value.slice(end)
+    setTimeout(() => {
+      el.selectionStart = el.selectionEnd = start + emoji.length
+      el.focus()
+    }, 0)
+  } else {
+    inputText.value += emoji
+  }
+  showEmoji.value = false
 }
 
 async function loadHistory() {
@@ -114,18 +133,30 @@ onMounted(() => {
     </div>
 
     <div class="chat-input-area">
-      <el-input
-        v-model="inputText"
-        type="textarea"
-        :rows="2"
-        placeholder="输入消息，Enter 发送，Shift+Enter 换行..."
-        :disabled="sending"
-        @keydown="handleKeydown"
-      />
-      <el-button type="primary" :disabled="!inputText.trim() || sending" @click="handleSend">
-        发送
-      </el-button>
+      <div class="chat-input-row">
+        <button class="emoji-toggle-btn" @click="showEmoji = !showEmoji" title="表情">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M8 14s1.5 2 4 2 4-2 4-2"/>
+            <line x1="9" y1="9" x2="9.01" y2="9"/>
+            <line x1="15" y1="9" x2="15.01" y2="9"/>
+          </svg>
+        </button>
+        <el-input
+          ref="chatInputRef"
+          v-model="inputText"
+          type="textarea"
+          :rows="2"
+          placeholder="输入消息，Enter 发送，Shift+Enter 换行..."
+          :disabled="sending"
+          @keydown="handleKeydown"
+        />
+        <el-button type="primary" :disabled="!inputText.trim() || sending" @click="handleSend">
+          发送
+        </el-button>
+      </div>
     </div>
+    <EmojiPicker :visible="showEmoji" @select="insertEmoji" @close="showEmoji = false" />
   </div>
 </template>
 
@@ -229,19 +260,42 @@ onMounted(() => {
 }
 
 .chat-input-area {
-  display: flex;
-  gap: 10px;
-  align-items: flex-end;
   padding: 12px 16px;
   background: var(--color-surface);
   border-top: 1px solid var(--color-border);
   flex-shrink: 0;
 }
-.chat-input-area .el-textarea {
+
+.chat-input-row {
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+}
+
+.chat-input-row .el-textarea {
   flex: 1;
 }
-.chat-input-area .el-button {
+.chat-input-row .el-button {
   flex-shrink: 0;
   height: 40px;
+}
+
+.emoji-toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  flex-shrink: 0;
+}
+.emoji-toggle-btn:hover {
+  background: var(--color-bg);
+  color: var(--color-primary);
 }
 </style>

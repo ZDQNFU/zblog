@@ -7,11 +7,12 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from article.models import Article, Comment, Like
+from article.models import Article, Comment, Like, Tag
 from article.serializers.article_serializer import (
     ArticleListSerializer,
     ArticleDetailSerializer,
     CommentCreateSerializer,
+    TagSerializer,
 )
 
 
@@ -127,3 +128,27 @@ class LikeToggleView(APIView):
             article.save(update_fields=['like_count'])
             return Response({'liked': False, 'like_count': article.like_count})
         return Response({'detail': '尚未点赞'}, status=status.HTTP_404_NOT_FOUND)
+
+
+class TagListView(generics.ListAPIView):
+    """C端：所有标签列表"""
+    serializer_class = TagSerializer
+    pagination_class = None
+
+    def get_queryset(self):
+        return Tag.objects.all()
+
+
+class RandomArticleView(generics.ListAPIView):
+    """C端：随机推荐3篇文章"""
+    serializer_class = ArticleListSerializer
+    pagination_class = None
+
+    def get_queryset(self):
+        return (
+            Article.objects
+            .filter(status=Article.STATUS_PUBLISHED)
+            .select_related('author', 'category')
+            .prefetch_related('tags')
+            .order_by('?')[:3]
+        )

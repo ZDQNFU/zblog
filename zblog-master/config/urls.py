@@ -38,4 +38,12 @@ urlpatterns = [
         'api/chat-robot/',
         include('chat_robot.urls')
     ),
+    path(
+        'api/tracking/',
+        include('tracking_api.urls')
+    ),
+    path(
+        'api/messages/',
+        include('message.urls')
+    ),
 ]

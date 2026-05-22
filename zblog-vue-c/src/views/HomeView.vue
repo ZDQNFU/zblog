@@ -4,10 +4,13 @@ import { fetchArticleList } from '@/api'
 import ArticleCard from '@/components/ArticleCard.vue'
 import Pagination from '@/components/Pagination.vue'
 import SearchBox from '@/components/SearchBox.vue'
+import SidePanel from '@/components/SidePanel.vue'
 
 const BREAKPOINT = 768
+const SIDEPANEL_BREAKPOINT = 1200
 
 const isWide = ref(window.innerWidth >= BREAKPOINT)
+const showSidePanel = ref(window.innerWidth >= SIDEPANEL_BREAKPOINT)
 const mediaSrc = ref(isWide.value ? '/img/咕咕嘎嘎.mp4' : '/img/咕咕嘎嘎.png')
 const videoKey = ref(0)
 const showVideo = ref(isWide.value)
@@ -60,6 +63,7 @@ function onResize() {
       showImage.value = true
     }
   }
+  showSidePanel.value = window.innerWidth >= SIDEPANEL_BREAKPOINT
 }
 
 async function load(page) {
@@ -159,7 +163,6 @@ onUnmounted(() => {
         </p>
       </div>
 
-      <!-- scroll indicator -->
       <Transition name="fade">
         <button v-show="scrollDownVisible" class="scroll-indicator" @click="scrollToArticles">
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
@@ -168,31 +171,35 @@ onUnmounted(() => {
     </section>
 
     <!-- Article list section -->
-    <section ref="articleSection" class="articles-section container">
-      <!-- <h2 class="section-title">文章</h2> -->
+    <section ref="articleSection" class="articles-section container-wide">
+      <div class="articles-layout">
+        <div class="articles-main">
+          <SearchBox v-model="searchQuery" @search="onSearch" />
 
-      <SearchBox v-model="searchQuery" @search="onSearch" />
+          <div v-if="loading" class="state-text">加载中...</div>
+          <div v-else-if="error" class="state-text error">{{ error }}</div>
+          <div v-else-if="!articles.length" class="state-text">暂无文章</div>
 
-      <div v-if="loading" class="state-text">加载中...</div>
-      <div v-else-if="error" class="state-text error">{{ error }}</div>
-      <div v-else-if="!articles.length" class="state-text">暂无文章</div>
+          <div v-else :class="['card-grid', { 'card-grid-2col': isWide }]">
+            <ArticleCard
+              v-for="(article, i) in articles"
+              :key="article.id"
+              :article="article"
+              class="fade-up"
+              :style="{ transitionDelay: i * 0.08 + 's' }"
+            />
+          </div>
 
-      <div v-else :class="['card-grid', { 'card-grid-2col': isWide }]">
-        <ArticleCard
-          v-for="(article, i) in articles"
-          :key="article.id"
-          :article="article"
-          class="fade-up"
-          :style="{ transitionDelay: i * 0.08 + 's' }"
-        />
+          <Pagination
+            :current="currentPage"
+            :total="total"
+            :page-size="pageSize"
+            @change="onPageChange"
+          />
+        </div>
+
+        <SidePanel v-if="showSidePanel" />
       </div>
-
-      <Pagination
-        :current="currentPage"
-        :total="total"
-        :page-size="pageSize"
-        @change="onPageChange"
-      />
     </section>
   </div>
 </template>
@@ -324,15 +331,18 @@ onUnmounted(() => {
 .articles-section {
   padding-top: 56px;
   padding-bottom: 64px;
-  position: relative;
-  /* box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.08); */
 }
 
-/* .section-title {
-  font-size: 1.5rem;
-  font-weight: 700;
-  margin-bottom: 28px;
-} */
+.articles-layout {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+}
+
+.articles-main {
+  flex: 1;
+  min-width: 0;
+}
 
 .card-grid {
   display: grid;

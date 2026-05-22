@@ -29,6 +29,11 @@ const router = createRouter({
       name: 'resources',
       component: () => import('@/views/ResourceView.vue'),
     },
+    {
+      path: '/message-board',
+      name: 'message-board',
+      component: () => import('@/views/MessageBoardView.vue'),
+    },
   ],
   scrollBehavior(to, from, savedPosition) {
     if (savedPosition) return savedPosition

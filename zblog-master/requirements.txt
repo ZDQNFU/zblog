@@ -2,6 +2,7 @@ Django==6.0.5
 djangorestframework==3.16.0
 djangorestframework-simplejwt==5.5.1
 django-cors-headers==4.9.0
+django-tracking2==0.5.1
 mysqlclient==2.2.8
 uuid6==2025.0.1
 langchain==1.3.0

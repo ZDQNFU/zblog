@@ -18,13 +18,18 @@ const baseMenuItems = [
   { path: '/tags', icon: 'CollectionTag', label: '标签管理' },
   { path: '/categories', icon: 'Folder', label: '分类管理' },
   { path: '/comments', icon: 'ChatLineSquare', label: '评论管理' },
+  { path: '/messages', icon: 'ChatLineRound', label: '留言管理' },
   { path: '/links', icon: 'Link', label: '资源管理' },
   { path: '/chats', icon: 'ChatDotSquare', label: '聊天管理' },
 ]
 
 const menuItems = computed(() => {
   if (auth.user?.is_superuser) {
-    return [...baseMenuItems, { path: '/users', icon: 'User', label: '用户管理' }]
+    return [
+      ...baseMenuItems,
+      { path: '/users', icon: 'User', label: '用户管理' },
+      { path: '/tracking', icon: 'Monitor', label: '访问日志' },
+    ]
   }
   return baseMenuItems
 })
