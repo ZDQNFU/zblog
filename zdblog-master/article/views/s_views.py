@@ -14,6 +14,7 @@ from article.serializers.article_serializer import (
     TagSerializer,
     CommentAdminSerializer,
 )
+from tools.cache_utils import invalidate
 from tools.image_controller import upload_image_to_github
 
 
@@ -37,6 +38,7 @@ class SArticleListCreateView(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
+        invalidate('dashboard:stats', 'c:random_articles')
 
 
 class SArticleRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
@@ -56,6 +58,14 @@ class SArticleRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
             return ArticleDetailSerializer
         return ArticleWriteSerializer
 
+    def perform_update(self, serializer):
+        serializer.save()
+        invalidate('dashboard:stats', 'c:random_articles')
+
+    def perform_destroy(self, instance):
+        instance.delete()
+        invalidate('dashboard:stats', 'c:random_articles')
+
 
 # ---------- Tag CRUD ----------
 
@@ -68,6 +78,7 @@ class STagListCreateView(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         serializer.save(created_by=self.request.user, updated_by=self.request.user)
+        invalidate('dashboard:stats', 'c:tags')
 
 
 class STagRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
@@ -78,6 +89,11 @@ class STagRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
 
     def perform_update(self, serializer):
         serializer.save(updated_by=self.request.user)
+        invalidate('dashboard:stats', 'c:tags')
+
+    def perform_destroy(self, instance):
+        instance.delete()
+        invalidate('dashboard:stats', 'c:tags')
 
 
 # ---------- Category CRUD ----------
@@ -91,6 +107,7 @@ class SCategoryListCreateView(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         serializer.save(created_by=self.request.user, updated_by=self.request.user)
+        invalidate('dashboard:stats')
 
 
 class SCategoryRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
@@ -101,6 +118,11 @@ class SCategoryRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
 
     def perform_update(self, serializer):
         serializer.save(updated_by=self.request.user)
+        invalidate('dashboard:stats')
+
+    def perform_destroy(self, instance):
+        instance.delete()
+        invalidate('dashboard:stats')
 
 
 # ---------- Comment CRUD ----------
@@ -118,6 +140,7 @@ class SCommentListCreateView(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
+        invalidate('dashboard:stats')
 
 
 class SCommentRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
@@ -128,6 +151,14 @@ class SCommentRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
         .select_related('author', 'article')
     )
     serializer_class = CommentAdminSerializer
+
+    def perform_update(self, serializer):
+        serializer.save()
+        invalidate('dashboard:stats')
+
+    def perform_destroy(self, instance):
+        instance.delete()
+        invalidate('dashboard:stats')
 
 
 class ImageUploadView(APIView):

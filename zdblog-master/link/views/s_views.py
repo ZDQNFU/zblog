@@ -1,5 +1,6 @@
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
+from tools.cache_utils import invalidate
 from ..models import ResourceLink
 from ..serializers import ResourceLinkSerializer
 
@@ -15,6 +16,7 @@ class SResourceLinkListCreateView(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         serializer.save(created_by=self.request.user)
+        invalidate('c:links')
 
 
 class SResourceLinkRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
@@ -27,3 +29,8 @@ class SResourceLinkRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIVi
 
     def perform_update(self, serializer):
         serializer.save(updated_by=self.request.user)
+        invalidate('c:links')
+
+    def perform_destroy(self, instance):
+        instance.delete()
+        invalidate('c:links')

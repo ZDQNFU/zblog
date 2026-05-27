@@ -4,6 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from tools.cache_utils import cache_result, invalidate
 from message.models import Message, MessageLike
 from message.serializers import MessageSerializer, MessageWriteSerializer
 
@@ -16,6 +17,10 @@ class MessageListView(generics.ListAPIView):
     def get_queryset(self):
         return Message.objects.filter(is_hidden=0).order_by('-created_at')
 
+    @cache_result('c:messages', timeout=30)
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+
 
 class MessageCreateView(generics.CreateAPIView):
     """C端：创建留言（登录绑定用户，匿名user为空）"""
@@ -24,6 +29,7 @@ class MessageCreateView(generics.CreateAPIView):
     def perform_create(self, serializer):
         user = self.request.user if self.request.user.is_authenticated else None
         serializer.save(user=user)
+        invalidate('c:messages')
 
 
 class MessageLikeToggleView(APIView):

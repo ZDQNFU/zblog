@@ -11,6 +11,7 @@
 - **LangChain 1.3** + **LangGraph** — AI Agent 框架
 - **LangGraph Checkpoint SQLite** — Agent 对话状态持久化
 - **DeepSeek API** — LLM 模型调用（通过 langchain-openai）
+- **Redis 7** — 缓存后端（django-redis 5.4 + redis-py 5.2）
 - **django-tracking2** — 访客行为追踪
 
 ### 前端
@@ -67,7 +68,8 @@ zdblog/
 │   │   └── views.py                # 访客列表/详情/删除/地理位置
 │   └── tools/                      # 工具模块
 │       ├── generate_nums.py        # UUID v7 生成、Django signing 加密/解密
-│       └── image_controller.py     # 图片压缩、上传到 GitHub CDN
+│       ├── image_controller.py     # 图片压缩、上传到 GitHub CDN
+│       └── cache_utils.py          # Redis 缓存装饰器与失效辅助函数
 │
 ├── zdblog-vue-c/                   # Vue3 C端（博客前台）
 │   └── src/
@@ -192,12 +194,69 @@ zdblog/
 - `published` — 已发布（C 端可见）
 - `private` — 私密（C 端列表可见，详情需验证作者密码）
 
+## Redis 缓存
+
+项目使用 Redis 作为缓存后端，对高频读取的接口做短时效缓存，数据库变更时自动失效。
+
+### 缓存配置
+
+缓存后端通过 django-redis 接入，配置位于 `config/settings.py` 的 `CACHES` 字典：
+
+- **后端**：`django_redis.cache.RedisCache`
+- **序列化**：Pickle（配合 `ZlibCompressor` 压缩）
+- **Key 前缀**：`zblog`（自动添加，避免多项目共用同一 Redis 实例时的键冲突）
+- **连接超时**：5s（`SOCKET_CONNECT_TIMEOUT`）、`SOCKET_TIMEOUT`）
+
+### 缓存策略
+
+| 缓存键 | 过期时间 | 覆盖接口 | 失效触发 |
+|--------|----------|----------|----------|
+| `dashboard:stats` | 300s (5min) | S 端仪表盘统计 | 文章/标签/分类/评论的增删改 |
+| `c:messages` | 30s | C 端留言列表 | 留言创建（C + S 端）、留言更新/删除（S 端） |
+| `c:tags` | 3600s (1h) | C 端标签列表 | 标签增删改 |
+| `c:links` | 1800s (30min) | C 端资源链接列表 | 链接增删改 |
+| `c:random_articles` | 300s (5min) | C 端随机推荐文章 | 文章增删改 |
+
+### 缓存失效机制
+
+所有数据变更操作（Create / Update / Delete）在 `perform_create`、`perform_update`、`perform_destroy` 中调用 `invalidate(*keys)` 清理对应缓存。下个请求到达时自动回源数据库并重新缓存。
+
+```python
+from tools.cache_utils import cache_result, invalidate
+
+# 读接口：装饰器自动处理缓存命中/回源
+@cache_result('dashboard:stats', timeout=300)
+def get(self, request):
+    ...
+
+# 写接口：数据变更后清理缓存
+def perform_create(self, serializer):
+    serializer.save(author=self.request.user)
+    invalidate('dashboard:stats', 'c:random_articles')
+```
+
+### 工具函数
+
+`tools/cache_utils.py` 提供四个辅助函数：
+
+| 函数 | 用途 |
+|------|------|
+| `cache_result(key, timeout)` | 装饰器，缓存 DRF APIView 方法的响应数据 |
+| `cached_or_fetch(key, timeout, fetch_func)` | 命令式缓存读取，未命中则调用 fetch_func |
+| `invalidate(*keys)` | 批量删除指定缓存键 |
+| `invalidate_pattern(pattern)` | 按通配符模式删除缓存（依赖 django-redis 扩展） |
+
+### IP 地理位置缓存
+
+`tracking_api/views.py` 的 `VisitorGeoView` 直接使用 Django cache 对单个 IP 的地理位置查询结果做缓存（key: `ip_geo_v2_{ip}`，有效期 86400s），避免重复请求外部 API。
+
 ## 快速开始
 
 ### 环境要求
 - Python 3.12+
 - Node.js 22.12+
 - MySQL 8.0+
+- Redis 7+
 
 ### 后端配置
 
@@ -210,6 +269,8 @@ source venv/bin/activate  # Windows: venv\Scripts\activate
 
 # 安装依赖
 pip install -r requirements.txt
+
+# 确保 Redis 服务已启动（默认 localhost:6379）
 
 # 创建 config/settings.py（参考下方环境变量说明）
 
@@ -238,14 +299,16 @@ npm run build      # 生产构建
 
 ### 环境变量
 
-需在 `zdblog-master/config/settings.py` 中配置以下关键项：
+需在 `zdblog-master/.env` 中配置以下关键项：
 
 - `SECRET_KEY` — Django 密钥
-- `DATABASES` — MySQL 数据库连接信息
-- `OPENAI_API_KEY` — DeepSeek API 密钥
-- `OPENAI_BASE_URL` — DeepSeek API 地址
-- `GITHUB_TOKEN` — GitHub Personal Access Token（图片上传用）
-- `GITHUB_ARTICLE_PATH` — GitHub 仓库图片存储路径
+- `DB_*` — MySQL 数据库连接信息（ENGINE / NAME / USER / PASSWORD / HOST / PORT）
+- `REDIS_HOST` / `REDIS_PORT` / `REDIS_PASSWORD` / `REDIS_DB` — Redis 连接信息
+- `DEEPSEEK_API_KEY` — DeepSeek API 密钥
+- `DEEPSEEK_BASE_URL` — DeepSeek API 地址
+- `SEARCH_URL` / `SEARCH_API_KEY` — 博查网络搜索 API
+- `EMAIL_*` — QQ 邮箱 SMTP 配置（验证码发送）
+- `ZDBLOG_C` / `ZDBLOG_S` — C 端 / S 端前端地址（CORS 白名单）
 
 ## API 概览
 

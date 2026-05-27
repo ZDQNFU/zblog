@@ -7,6 +7,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from tools.cache_utils import cache_result
 from article.models import Article, Comment, Like, Tag
 from article.serializers.article_serializer import (
     ArticleListSerializer,
@@ -138,6 +139,10 @@ class TagListView(generics.ListAPIView):
     def get_queryset(self):
         return Tag.objects.all()
 
+    @cache_result('c:tags', timeout=3600)
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+
 
 class RandomArticleView(generics.ListAPIView):
     """C端：随机推荐3篇文章"""
@@ -152,3 +157,7 @@ class RandomArticleView(generics.ListAPIView):
             .prefetch_related('tags')
             .order_by('?')[:3]
         )
+
+    @cache_result('c:random_articles', timeout=300)
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)

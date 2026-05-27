@@ -451,7 +451,7 @@ const statCards = [
 /* ========== Charts grid ========== */
 .charts-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 20px;
 }
 
@@ -463,6 +463,9 @@ const statCards = [
 @media (max-width: 1200px) {
   .dual-row {
     grid-template-columns: 1fr;
+  }
+  .charts-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
   .chart-wrapper { height: 240px; }
 }

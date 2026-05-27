@@ -1,6 +1,7 @@
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
 
+from tools.cache_utils import invalidate
 from message.models import Message
 from message.serializers import MessageAdminSerializer, MessageWriteSerializer
 
@@ -27,6 +28,7 @@ class SMessageListCreateView(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+        invalidate('c:messages')
 
 
 class SMessageRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
@@ -37,3 +39,11 @@ class SMessageRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
 
     def get_serializer_class(self):
         return MessageAdminSerializer
+
+    def perform_update(self, serializer):
+        serializer.save()
+        invalidate('c:messages')
+
+    def perform_destroy(self, instance):
+        instance.delete()
+        invalidate('c:messages')

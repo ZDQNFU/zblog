@@ -7,6 +7,7 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from article.models import Article, Category, Tag, Comment
+from tools.cache_utils import cache_result
 from .captcha import generate_captcha, verify_captcha
 from .permissions import IsSuperAdmin
 from .email_verification import generate_verification_code
@@ -94,6 +95,7 @@ class StatsView(APIView):
     """管理端统计数据"""
     permission_classes = [IsAuthenticated]
 
+    @cache_result('dashboard:stats', timeout=300)
     def get(self, request):
         total_articles = Article.objects.count()
         published_articles = Article.objects.filter(status='published').count()
