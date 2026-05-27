@@ -1,4 +1,4 @@
-# ZBlog — 个人博客系统
+# ZDBlog — 个人博客系统
 
 基于 Django + Vue3 构建的个人博客系统，包含博客前台、管理后台、AI 聊天机器人和资源分享功能。
 
@@ -6,132 +6,185 @@
 
 ### 后端
 - **Django 6.0** + **Django REST Framework 3.16** — RESTful API
-- **Simple JWT 5.5** — 基于 JWT 的用户认证
-- **MySQL** — 主数据库（mysqlclient 2.2）
+- **Simple JWT 5.5** — 基于 JWT 的用户认证（access 2h / refresh 7d）
+- **MySQL 8.0** — 主数据库（mysqlclient 2.2）
 - **LangChain 1.3** + **LangGraph** — AI Agent 框架
 - **LangGraph Checkpoint SQLite** — Agent 对话状态持久化
-- **OpenAI API** — LLM 模型调用
+- **DeepSeek API** — LLM 模型调用（通过 langchain-openai）
+- **django-tracking2** — 访客行为追踪
 
 ### 前端
 - **Vue 3.5** (Composition API + `<script setup>`)
 - **Vue Router 5** — 路由管理
 - **Pinia 3** — 状态管理
 - **Element Plus 2.14** — UI 组件库
-- **md-editor-v3** — Markdown 渲染（代码高亮）
-- **Chart.js** + **vue-chartjs** — 数据图表
+- **marked** + **highlight.js** — Markdown 渲染与代码高亮
+- **md-editor-v3** — S 端 Markdown 编辑器
+- **Chart.js** + **ECharts 6** — 数据图表与地图可视化
+- **Axios** — S 端 HTTP 客户端
 - **Vite 8** — 构建工具
 
 ## 项目结构
 
 ```
-zblog/
-├── zblog-master/                 # Django 后端
-│   ├── config/                   # 项目配置（URL路由、settings）
-│   ├── article/                  # 文章应用
-│   │   ├── models.py             # Article、Category、Tag、Comment、Like
-│   │   ├── serializers/          # 序列化器（列表/详情/评论）
-│   │   ├── views/                # C端公开视图 + S端管理视图
-│   │   ├── services/             # 业务逻辑层
-│   │   └── urls.py               # 路由（/api/articles/c/、/api/articles/s/）
-│   ├── user/                     # 用户应用
-│   │   ├── views.py              # 注册、登录、用户信息
-│   │   ├── serializers.py        # 用户序列化器
-│   │   ├── captcha.py            # 图形验证码
-│   │   ├── email_verification.py # 邮箱验证码
-│   │   ├── permissions.py        # 权限控制
-│   │   └── throttling.py         # 请求限流
-│   ├── chat_robot/               # 聊天机器人应用
-│   │   ├── agent.py              # LangGraph Agent 初始化
-│   │   ├── models.py             # ChatMessage 模型（MySQL持久化）
-│   │   ├── views.py              # SSE流式响应、历史管理
-│   │   ├── tools.py              # Agent 工具（天气、搜索等）
-│   │   ├── prompts.py            # System Prompt 定义
-│   │   └── speak.py              # TTS 语音合成
-│   ├── link/                     # 资源链接应用
-│   │   ├── models.py             # ResourceLink 模型
-│   │   └── views/                # C端列表 + S端CRUD
-│   └── tools/                    # 工具模块（UUID v7 生成器等）
+zdblog/
+├── zdblog-master/                  # Django 后端
+│   ├── config/                     # 项目配置（settings、URL 路由）
+│   ├── article/                    # 文章应用
+│   │   ├── models.py               # Article、Category、Tag、Comment、Like
+│   │   ├── serializers/            # 序列化器（列表/详情/评论）
+│   │   ├── views/                  # C端视图（c_views）+ S端视图（s_views）
+│   │   ├── services/               # 业务逻辑层
+│   │   └── urls.py                 # 路由（/api/articles/c/、/api/articles/s/）
+│   ├── user/                       # 用户应用
+│   │   ├── views.py                # 注册、登录、JWT、用户管理
+│   │   ├── chat_views.py           # 聊天视图（同 chat_robot 的副本实现）
+│   │   ├── serializers.py          # 用户序列化器
+│   │   ├── captcha.py              # 算式图形验证码
+│   │   ├── email_verification.py   # 邮箱验证码（QQ SMTP）
+│   │   ├── permissions.py          # IsSuperAdmin 权限类
+│   │   └── throttling.py           # 登录限流（指数退避）
+│   ├── chat_robot/                 # 聊天机器人应用
+│   │   ├── agent.py                # LangGraph Agent 初始化（DeepSeek + 工具 + 摘要中间件）
+│   │   ├── models.py               # ChatMessage 模型（MySQL 持久化）
+│   │   ├── views.py                # SSE 流式响应、聊天记录管理
+│   │   ├── tools.py                # Agent 工具（天气、搜索、情感分析）
+│   │   ├── prompts.py              # System Prompt（明日香角色扮演）
+│   │   ├── utils.py                # LLM 工厂、流式响应、DeepSeek reasoning_content 适配
+│   │   ├── urls.py                 # 路由（/api/chat-robot/）
+│   │   └── data/asuka_memory.db    # LangGraph SQLite checkpoint 数据库
+│   ├── link/                       # 资源链接应用
+│   │   ├── models.py               # ResourceLink 模型
+│   │   └── views/                  # C端列表 + S端CRUD
+│   ├── message/                    # 留言板应用
+│   │   ├── models.py               # Message、MessageLike 模型
+│   │   └── views/                  # C端列表/创建/点赞 + S端管理
+│   ├── system_config/              # 系统配置应用（KV 键值存储）
+│   │   ├── models.py               # SystemConfig 模型（支持加密字段）
+│   │   └── views.py                # S端 CRUD
+│   ├── tracking_api/               # 访客追踪 API
+│   │   ├── serializers.py          # Visitor、Pageview 序列化器
+│   │   └── views.py                # 访客列表/详情/删除/地理位置
+│   └── tools/                      # 工具模块
+│       ├── generate_nums.py        # UUID v7 生成、Django signing 加密/解密
+│       └── image_controller.py     # 图片压缩、上传到 GitHub CDN
 │
-├── zblog-vue-c/                  # Vue3 C端（博客前台）
+├── zdblog-vue-c/                   # Vue3 C端（博客前台）
 │   └── src/
-│       ├── views/                # 页面组件
-│       │   ├── HomeView.vue      # 首页
-│       │   ├── ArticleListView.vue     # 文章列表
-│       │   ├── ArticleDetailView.vue   # 文章详情
-│       │   ├── ChatView.vue      # AI 聊天
-│       │   └── ResourceView.vue  # 资源分享
-│       ├── components/           # 公共组件
-│       │   ├── ArticleCard.vue   # 文章卡片
-│       │   ├── ArticleTOC.vue    # 文章目录
-│       │   ├── AuthModal.vue     # 登录/注册弹窗
-│       │   ├── CommentForm.vue   # 评论表单
-│       │   ├── Pagination.vue    # 分页
-│       │   └── SiteFooter.vue   # 页脚
-│       ├── stores/auth.js        # 认证状态管理
-│       ├── router/index.js       # 路由配置（含鉴权守卫）
-│       └── api/index.js          # API 请求封装
+│       ├── views/                  # 页面组件（6 个）
+│       │   ├── HomeView.vue           # 首页（文章列表 + 侧栏）
+│       │   ├── ArticleListView.vue    # 文章列表（标签/分类筛选 + 搜索）
+│       │   ├── ArticleDetailView.vue  # 文章详情（Markdown 渲染 + 目录 + 评论）
+│       │   ├── ChatView.vue           # AI 聊天（SSE 流式响应，需 staff 权限）
+│       │   ├── ResourceView.vue       # 资源分享（卡片网格）
+│       │   └── MessageBoardView.vue   # 留言板
+│       ├── components/             # 公共组件（11 个）
+│       │   ├── ArticleCard.vue     # 文章卡片
+│       │   ├── ArticleTOC.vue      # 文章目录导航
+│       │   ├── AuthModal.vue       # 登录/注册弹窗
+│       │   ├── CommentForm.vue     # 评论表单
+│       │   ├── EmojiPicker.vue     # Emoji 表情选择器
+│       │   ├── MessageCard.vue     # 留言卡片
+│       │   ├── Pagination.vue      # 分页组件
+│       │   ├── SearchBox.vue       # 搜索框
+│       │   ├── SidePanel.vue       # 侧栏面板
+│       │   ├── SiteFooter.vue      # 页脚
+│       │   └── UserAvatar.vue      # 用户头像
+│       ├── stores/auth.js          # 认证状态（Pinia）
+│       ├── composables/useTheme.js # 暗黑模式切换
+│       ├── router/index.js         # 路由配置（含鉴权守卫）
+│       └── api/index.js            # API 请求封装（原生 fetch + SSE）
 │
-└── zblog-vue-s/                  # Vue3 S端（管理后台）
+└── zdblog-vue-s/                   # Vue3 S端（管理后台）
     └── src/
-        ├── views/                # 管理页面
-        │   ├── DashboardView.vue       # 仪表盘
+        ├── views/                  # 管理页面（13 个）
+        │   ├── DashboardView.vue       # 数据仪表盘（Chart.js 图表）
         │   ├── ArticleManageView.vue   # 文章管理
-        │   ├── ArticleEditView.vue     # 文章编辑
+        │   ├── ArticleEditView.vue     # 文章编辑（md-editor-v3）
         │   ├── TagManageView.vue       # 标签管理
         │   ├── CategoryManageView.vue  # 分类管理
         │   ├── CommentManageView.vue   # 评论管理
-        │   ├── UserManageView.vue      # 用户管理
-        │   ├── ChatManageView.vue      # 聊天记录管理
+        │   ├── UserManageView.vue      # 用户管理（仅 superuser）
         │   ├── ResourceManageView.vue  # 资源链接管理
-        │   └── LoginView.vue           # 登录
-        ├── api/                  # API 模块（按资源拆分）
-        ├── components/AdminLayout.vue  # 管理端布局
-        └── router/index.js       # 路由配置
+        │   ├── ChatManageView.vue      # 聊天记录管理
+        │   ├── TrackingManageView.vue  # 访客追踪（ECharts 地图）
+        │   ├── MessageManageView.vue   # 留言管理
+        │   ├── SystemConfigView.vue    # 系统配置管理（仅 superuser）
+        │   └── LoginView.vue           # 登录页
+        ├── api/                    # API 模块（12 个，按资源拆分）
+        │   ├── index.js            # Axios 实例（JWT 自动刷新 + 请求队列）
+        │   ├── auth.js             # 登录/登出/用户信息/统计
+        │   ├── articles.js         # 文章 CRUD
+        │   ├── categories.js       # 分类 CRUD
+        │   ├── tags.js             # 标签 CRUD
+        │   ├── comments.js         # 评论管理
+        │   ├── users.js            # 用户管理
+        │   ├── links.js            # 资源链接 CRUD
+        │   ├── chats.js            # 聊天记录管理
+        │   ├── tracking.js         # 访客追踪
+        │   ├── messages.js         # 留言管理
+        │   └── systemConfig.js     # 系统配置 CRUD
+        ├── components/AdminLayout.vue  # 管理端侧栏布局
+        ├── stores/auth.js          # 认证状态
+        ├── composables/useTheme.js # 暗黑模式切换
+        ├── assets/china.json       # 中国地图 GeoJSON（ECharts 访客地图）
+        └── router/index.js         # 路由配置（含鉴权守卫）
 ```
 
 ## 功能特性
 
-### 博客前台（C端）
-- 文章列表（分页、标签、分类筛选）
+### 博客前台（C 端）
+- 文章列表（分页、标签、分类筛选、搜索）
 - 文章详情（Markdown 渲染 + 代码高亮 + 目录导航）
-- 公开文章与私密文章（需密码验证）
-- 评论系统（支持回复，需登录）
+- 公开文章与私密文章（需密码验证，密码为作者密码）
+- 评论系统（支持回复与嵌套，需登录）
 - 点赞/取消点赞（幂等操作）
-- AI 聊天机器人（SSE 流式响应，需登录且有权限）
-- 资源链接分享页（响应式卡片网格）
+- AI 聊天机器人（SSE 流式响应，需 staff 权限）
+- 资源链接分享（响应式卡片网格）
+- 留言板（支持匿名留言、emoji、点赞）
+- 暗黑模式（localStorage 持久化）
 
-### 管理后台（S端）
-- 数据仪表盘（Chart.js 图表）
-- 文章 CRUD（Markdown 编辑器 + 实时预览）
+### 管理后台（S 端）
+- 数据仪表盘（Chart.js 趋势图 + 饼图）
+- 文章 CRUD（Markdown 编辑器 + 实时预览，图片上传至 GitHub CDN）
 - 标签、分类管理
-- 评论管理（查看、删除）
-- 用户管理
-- 聊天记录管理（按用户查看、清除、裁剪）
-- 资源链接管理（增删改查 + 搜索）
+- 评论管理
+- 用户管理（仅超级管理员）
+- 聊天记录管理（按用户查看、清空、裁剪）
+- 访客追踪（ECharts 中国地图 + 访问明细 + IP 反查）
+- 留言管理（列表、隐藏、删除）
+- 资源链接管理
+- 系统配置管理（KV 键值存储，支持加密字段，仅超级管理员）
+- 暗黑模式
 
 ### 聊天机器人
 - 基于 LangGraph 的 Agent 架构
-- 工具调用（天气查询、网络搜索等）
-- 对话摘要中间件（4000 token 触发，保留最近 20 条消息）
-- MySQL + SQLite 双写持久化
+- 明日香角色扮演（定制 System Prompt）
+- 工具调用：天气查询（open-meteo）、网络搜索（博查）、中文情感分析
+- DeepSeek reasoning_content 适配（模型思考过程注入回复）
+- SummarizationMiddleware — 对话超过 10000 token 自动摘要，保留最近 50 条消息
+- MySQL + SQLite 双写持久化（MySQL 存消息记录，SQLite 存 LangGraph checkpoint）
 - SSE 流式响应
+- 管理端可按用户查看、清空、裁剪聊天记录
 
 ## 数据库设计
 
-所有表主键使用 UUID v7（去除连字符，32 位十六进制字符串）。
+所有自定义表主键使用 UUID v7（32 位十六进制字符串，时间可排序）。
 
 ### 核心表
 
 | 表名 | 说明 | 主要字段 |
 |------|------|----------|
-| `article` | 文章 | title, slug, content_md, content_html, cover, status, view_count, like_count, comment_count, author, category, tags, published_at |
+| `article` | 文章 | title, slug, summary, content_md, content_html, cover, status, view_count, like_count, comment_count, author, category, tags, published_at |
 | `article_category` | 文章分类 | name |
 | `article_tag` | 文章标签 | name, color |
-| `article_tags` | 文章-标签关联 | article_id, tag_id |
-| `article_comment` | 文章评论 | article, author, parent(自引用), content |
+| `article_comment` | 文章评论 | article, author (User FK), parent (自引用), content |
 | `article_like` | 文章点赞 | article, user (唯一约束) |
-| `chat_messages` | 聊天记录 | user, role (human/ai), content, token_count |
+| `chat_messages` | 聊天记录 | user, role (user/ai), content, token_count |
 | `link_link` | 资源链接 | name, url, image_url, color, description |
+| `message` | 留言板 | user (可空), content, like_count, is_hidden |
+| `message_like` | 留言点赞 | message, user (唯一约束) |
+| `system_config` | 系统配置 | key (唯一), value, value_type, description, is_encrypted |
 | `auth_user` | 用户 | Django 内置 User 模型 |
 
 ### 文章状态
@@ -149,7 +202,7 @@ zblog/
 ### 后端配置
 
 ```bash
-cd zblog-master
+cd zdblog-master
 
 # 创建虚拟环境
 python -m venv venv
@@ -158,7 +211,7 @@ source venv/bin/activate  # Windows: venv\Scripts\activate
 # 安装依赖
 pip install -r requirements.txt
 
-# 创建 config/settings.py（参考下方模板，配置数据库等信息）
+# 创建 config/settings.py（参考下方环境变量说明）
 
 # 数据库迁移
 python manage.py migrate
@@ -171,13 +224,13 @@ python manage.py runserver 8000
 
 ```bash
 # C 端（博客前台）
-cd zblog-vue-c
+cd zdblog-vue-c
 npm install
 npm run dev        # 开发模式
 npm run build      # 生产构建
 
 # S 端（管理后台）
-cd zblog-vue-s
+cd zdblog-vue-s
 npm install
 npm run dev        # 开发模式
 npm run build      # 生产构建
@@ -185,50 +238,71 @@ npm run build      # 生产构建
 
 ### 环境变量
 
-需在 `zblog-master/config/settings.py` 中配置以下关键项：
+需在 `zdblog-master/config/settings.py` 中配置以下关键项：
 
 - `SECRET_KEY` — Django 密钥
 - `DATABASES` — MySQL 数据库连接信息
-- `OPENAI_API_KEY` — LLM API 密钥
-- `OPENAI_BASE_URL` — LLM API 地址
+- `OPENAI_API_KEY` — DeepSeek API 密钥
+- `OPENAI_BASE_URL` — DeepSeek API 地址
+- `GITHUB_TOKEN` — GitHub Personal Access Token（图片上传用）
+- `GITHUB_ARTICLE_PATH` — GitHub 仓库图片存储路径
 
 ## API 概览
 
-### 公开接口（C端）
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| GET | `/api/articles/c/list/` | 文章列表（分页） |
-| GET | `/api/articles/c/<id>/` | 文章详情 |
-| POST | `/api/articles/c/<id>/verify/` | 私密文章密码验证 |
-| POST | `/api/articles/c/comments/` | 创建评论（需登录） |
-| POST | `/api/articles/c/<id>/like/` | 点赞（需登录） |
-| DELETE | `/api/articles/c/<id>/like/` | 取消点赞（需登录） |
-| POST | `/api/auth/register/` | 用户注册 |
-| POST | `/api/auth/login/` | 用户登录 |
-| GET | `/api/auth/me/` | 当前用户信息 |
-| POST | `/api/auth/send-code/` | 发送邮箱验证码 |
-| GET | `/api/auth/captcha/` | 获取图形验证码 |
-| POST | `/api/chat-robot/stream/` | 聊天流式响应（需登录） |
-| GET | `/api/chat-robot/history/` | 聊天历史（需登录） |
-| GET | `/api/links/c/links/` | 资源链接列表 |
+### 公开 / C 端接口
 
-### 管理接口（S端）
+| 方法 | 路径 | 说明 | 认证 |
+|------|------|------|------|
+| GET | `/api/articles/c/list/` | 文章列表（分页、搜索） | 否 |
+| GET | `/api/articles/c/<id>/` | 文章详情 | 否 |
+| POST | `/api/articles/c/<id>/verify/` | 私密文章密码验证 | 否 |
+| GET | `/api/articles/c/tags/` | 标签列表 | 否 |
+| GET | `/api/articles/c/random/` | 随机文章 | 否 |
+| POST | `/api/articles/c/comments/` | 创建评论 | 是 |
+| POST | `/api/articles/c/<id>/like/` | 点赞文章 | 是 |
+| DELETE | `/api/articles/c/<id>/like/` | 取消点赞 | 是 |
+| POST | `/api/auth/register/` | 用户注册 | 否 |
+| POST | `/api/auth/login/` | 用户登录 | 否 |
+| GET | `/api/auth/me/` | 当前用户信息 | 是 |
+| POST | `/api/auth/send-code/` | 发送邮箱验证码 | 否 |
+| GET | `/api/auth/captcha/` | 获取算式验证码 | 否 |
+| POST | `/api/chat-robot/stream/` | 聊天 SSE 流式响应 | 是（staff） |
+| GET | `/api/chat-robot/history/` | 聊天历史（近 30 天） | 是 |
+| GET | `/api/links/c/links/` | 资源链接列表 | 否 |
+| GET | `/api/messages/c/list/` | 留言列表 | 否 |
+| POST | `/api/messages/c/create/` | 创建留言 | 否（自动绑定已登录用户） |
+| POST/DELETE | `/api/messages/c/<id>/like/` | 点赞/取消留言 | 是 |
+
+### 管理 / S 端接口
+
 | 方法 | 路径 | 说明 |
 |------|------|------|
-| GET/POST | `/api/articles/s/articles/` | 文章列表/创建 |
-| GET/PUT/DELETE | `/api/articles/s/articles/<id>/` | 文章详情/更新/删除 |
-| GET/POST | `/api/articles/s/tags/` | 标签列表/创建 |
-| GET/PUT/DELETE | `/api/articles/s/tags/<id>/` | 标签详情/更新/删除 |
-| GET/POST | `/api/articles/s/categories/` | 分类列表/创建 |
-| GET/PUT/DELETE | `/api/articles/s/categories/<id>/` | 分类详情/更新/删除 |
+| GET/POST | `/api/articles/s/articles/` | 文章列表 / 创建 |
+| GET/PATCH/DELETE | `/api/articles/s/articles/<id>/` | 文章详情 / 更新 / 删除 |
+| POST | `/api/articles/s/upload-image/` | 上传图片到 GitHub CDN |
+| GET/POST | `/api/articles/s/tags/` | 标签列表 / 创建 |
+| GET/PATCH/DELETE | `/api/articles/s/tags/<id>/` | 标签详情 / 更新 / 删除 |
+| GET/POST | `/api/articles/s/categories/` | 分类列表 / 创建 |
+| GET/PATCH/DELETE | `/api/articles/s/categories/<id>/` | 分类详情 / 更新 / 删除 |
 | GET | `/api/articles/s/comments/` | 评论列表 |
 | DELETE | `/api/articles/s/comments/<id>/` | 删除评论 |
+| GET/POST | `/api/auth/users/` | 用户列表 / 创建（仅 superuser） |
+| GET/PATCH/DELETE | `/api/auth/users/<pk>/` | 用户详情 / 更新 / 删除 |
 | GET | `/api/chat-robot/users/` | 聊天用户列表 |
 | GET | `/api/chat-robot/users/<id>/` | 用户聊天详情 |
-| DELETE | `/api/chat-robot/users/<id>/clear/` | 清除用户聊天记录 |
-| DELETE | `/api/chat-robot/users/<id>/trim/` | 裁剪用户聊天记录 |
-| GET/POST | `/api/links/s/links/` | 资源链接列表/创建 |
-| GET/PUT/DELETE | `/api/links/s/links/<id>/` | 资源链接详情/更新/删除 |
+| POST | `/api/chat-robot/users/<id>/clear/` | 清空聊天记录（MySQL + SQLite） |
+| POST | `/api/chat-robot/users/<id>/trim/` | 裁剪旧聊天记录 |
+| GET/POST | `/api/links/s/links/` | 资源链接列表 / 创建 |
+| GET/PATCH/DELETE | `/api/links/s/links/<id>/` | 资源链接详情 / 更新 / 删除 |
+| GET/POST | `/api/messages/s/messages/` | 留言列表 / 创建 |
+| GET/PATCH/DELETE | `/api/messages/s/messages/<id>/` | 留言详情 / 更新 / 删除 |
+| GET/POST | `/api/system-config/s/configs/` | 系统配置列表 / 创建 |
+| GET/PATCH/DELETE | `/api/system-config/s/configs/<id>/` | 配置详情 / 更新 / 删除 |
+| GET | `/api/tracking/visitors/` | 访客列表（可搜索 IP/用户名） |
+| GET | `/api/tracking/visitors/<session_key>/` | 访客详情 |
+| DELETE | `/api/tracking/visitors/<session_key>/` | 删除访客记录 |
+| POST | `/api/tracking/visitors/delete/` | 批量删除访客 |
+| GET | `/api/tracking/visitors/geo/` | 访客 IP 地理位置反查 |
 
 ## License
 
